@@ -444,27 +444,9 @@ class TaskExecutor:
                         # For stock data from data fetching tasks
                         if 'historical_data' in dep_result.data:
                             params['data'] = dep_result.data['historical_data']
-                        # Check for nested yahoo_data structure from StockDataAggregator
-                        elif 'yahoo_data' in dep_result.data and 'historical_data' in dep_result.data['yahoo_data']:
-                            params['data'] = dep_result.data['yahoo_data']['historical_data']
                         # For technical analysis results
                         elif any(key in dep_result.data for key in ['sma_20', 'rsi', 'macd']):
                             params['technical_data'] = dep_result.data
-        
-        # Special handling for tasks that need both data and technical_data (like trading_signals)
-        if 'technical_data' in params and 'data' not in params:
-            # Need to find the original stock data for trading signals
-            # Look for data task by extracting symbol from current task_id
-            if hasattr(task, 'parameters') and 'symbol' in task.parameters:
-                symbol = task.parameters['symbol']
-                data_task_id = f"data_{symbol}"
-                if data_task_id in self.execution_results:
-                    stock_result = self.execution_results[data_task_id]
-                    if stock_result.success and stock_result.data:
-                        if 'yahoo_data' in stock_result.data and 'historical_data' in stock_result.data['yahoo_data']:
-                            params['data'] = stock_result.data['yahoo_data']['historical_data']
-                        elif 'historical_data' in stock_result.data:
-                            params['data'] = stock_result.data['historical_data']
                         # For any other structured data
                         else:
                             # Try to extract the most relevant data
