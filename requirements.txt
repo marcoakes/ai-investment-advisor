@@ -1,0 +1,31 @@
+# AI Investment Research Assistant Requirements
+
+# Core dependencies
+pandas>=2.0.0
+numpy>=1.24.0
+requests>=2.31.0
+
+# Financial data APIs
+yfinance>=0.2.20
+
+# Technical analysis and backtesting
+scipy>=1.10.0
+
+# Visualization
+matplotlib>=3.7.0
+seaborn>=0.12.0
+plotly>=5.15.0
+
+# Report generation
+reportlab>=4.0.0
+python-pptx>=0.6.21
+
+# Optional API dependencies (install if using)
+# alpha-vantage>=2.3.1
+# finnhub-python>=2.4.20
+
+# Development dependencies (optional)
+# pytest>=7.4.0
+# pytest-cov>=4.1.0
+# black>=23.0.0
+# flake8>=6.0.0

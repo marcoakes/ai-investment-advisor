@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# Post-build script for Binder environment
+echo "🚀 Setting up AI Investment Research Assistant for Binder..."
+
+# Create output directories
+mkdir -p charts reports presentations
+
+# Set permissions
+chmod +x upload_to_github.sh
+
+# Install package in development mode
+pip install -e .
+
+# Create welcome message
+cat > welcome.txt << EOF
+🤖 Welcome to AI Investment Research Assistant!
+
+To get started:
+1. Open a terminal
+2. Run: python investment_advisor/cli.py
+3. Try: "analyze AAPL" or "help"
+
+Example commands:
+- analyze TSLA
+- compare AAPL vs MSFT  
+- technical analysis for GOOGL
+- help
+
+Have fun exploring! 🚀
+EOF
+
+echo "✅ Binder setup complete!"

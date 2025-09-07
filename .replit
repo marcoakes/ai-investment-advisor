@@ -1,0 +1,50 @@
+# Replit configuration for AI Investment Research Assistant
+language = "python3"
+run = "python investment_advisor/cli.py"
+
+[nix]
+channel = "stable-22_11"
+
+[deployment]
+run = ["sh", "-c", "python investment_advisor/cli.py"]
+
+[env]
+PYTHONPATH = "/home/runner/ai-investment-advisor"
+MPLBACKEND = "Agg"
+
+[interpreter]
+command = [
+  "prybar-python3",
+  "-q",
+  "--ps1",
+  "\u0001\u001b[33m\u0002\u0001\u001b[00m\u0002 ",
+  "-i"
+]
+
+[languages.python3]
+pattern = "**/*.py"
+
+[languages.python3.languageServer]
+start = ["pyls"]
+
+[debugger]
+support = true
+
+[debugger.interactive]
+transport = "localhost:5577"
+startCommand = ["dap-python", "investment_advisor/cli.py"]
+
+[debugger.interactive.integratedAdapter]
+dapTcpAddress = "localhost:5577"
+
+[packager]
+language = "python3"
+ignoredPackages = ["unit_tests"]
+
+[packager.features]
+enabledForHosting = false
+packageSearch = true
+guessImports = true
+
+[unitTest]
+language = "python3"

@@ -1,0 +1,44 @@
+name: Live Demo
+
+on:
+  workflow_dispatch:  # Manual trigger
+  schedule:
+    - cron: '0 12 * * 1'  # Weekly demo on Mondays
+
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: Run demo analysis
+      run: |
+        echo "🚀 Running AI Investment Research Assistant Demo"
+        python investment_advisor/cli.py --query "analyze AAPL" || echo "Demo completed"
+        
+    - name: Show generated files
+      run: |
+        echo "📊 Generated files:"
+        ls -la charts/ 2>/dev/null || echo "No charts generated"
+        ls -la reports/ 2>/dev/null || echo "No reports generated"
+        
+    - name: Upload demo artifacts
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: demo-output
+        path: |
+          charts/
+          reports/
+          presentations/

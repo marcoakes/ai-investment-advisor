@@ -1,0 +1,106 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        pip install build twine
+
+    - name: Build package
+      run: |
+        python -m build
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: AI Investment Research Assistant ${{ github.ref }}
+        body: |
+          ## 🚀 What's New
+          
+          ### ✨ Features
+          - Comprehensive stock analysis with technical indicators
+          - Advanced backtesting capabilities
+          - Professional report generation (PDF/PowerPoint)
+          - Interactive CLI with natural language processing
+          - Multi-source financial data integration
+          
+          ### 🔧 Installation
+          ```bash
+          git clone https://github.com/${{ github.repository }}.git
+          cd ai-investment-advisor
+          pip install -r requirements.txt
+          python investment_advisor/cli.py
+          ```
+          
+          ### 📊 Quick Start
+          ```bash
+          python investment_advisor/cli.py --query "analyze AAPL"
+          ```
+          
+          ### 🌐 Try Online
+          - 🔗 [Gitpod](https://gitpod.io/#https://github.com/${{ github.repository }})
+          - 🔗 [Binder](https://mybinder.org/v2/gh/${{ github.repository }}/main)
+          - 🔗 [Google Colab](https://colab.research.google.com/github/${{ github.repository }}/blob/main/AI_Investment_Assistant_Demo.ipynb)
+          
+          ### 📚 Documentation
+          - [README](https://github.com/${{ github.repository }}#readme)
+          - [Contributing Guide](https://github.com/${{ github.repository }}/blob/main/CONTRIBUTING.md)
+          - [Setup Instructions](https://github.com/${{ github.repository }}/blob/main/SETUP_INSTRUCTIONS.md)
+          
+          **⚠️ Disclaimer**: This software is for educational and research purposes only.
+        draft: false
+        prerelease: false
+
+    - name: Upload Release Assets
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./dist/
+        asset_name: ai-investment-advisor-dist.zip
+        asset_content_type: application/zip
+
+  # Optional: Publish to PyPI
+  # publish-pypi:
+  #   runs-on: ubuntu-latest
+  #   needs: create-release
+  #   
+  #   steps:
+  #   - uses: actions/checkout@v4
+  #   - name: Set up Python
+  #     uses: actions/setup-python@v4
+  #     with:
+  #       python-version: '3.11'
+  #   
+  #   - name: Install dependencies
+  #     run: |
+  #       pip install build twine
+  #   
+  #   - name: Build package
+  #     run: python -m build
+  #   
+  #   - name: Publish to PyPI
+  #     uses: pypa/gh-action-pypi-publish@release/v1
+  #     with:
+  #       password: ${{ secrets.PYPI_API_TOKEN }}

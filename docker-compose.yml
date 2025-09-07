@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  investment-advisor:
+    build: .
+    container_name: ai-investment-advisor
+    stdin_open: true
+    tty: true
+    environment:
+      # Optional: Set API keys via environment
+      - ALPHA_VANTAGE_API_KEY=${ALPHA_VANTAGE_API_KEY}
+      - FINNHUB_API_KEY=${FINNHUB_API_KEY}
+    volumes:
+      # Mount output directories to host
+      - ./charts:/app/charts
+      - ./reports:/app/reports  
+      - ./presentations:/app/presentations
+    restart: unless-stopped

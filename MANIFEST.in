@@ -1,0 +1,7 @@
+include README.md
+include LICENSE
+include requirements.txt
+include config.py
+recursive-include investment_advisor *.py
+global-exclude __pycache__
+global-exclude *.py[co]

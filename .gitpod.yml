@@ -1,0 +1,66 @@
+# Gitpod configuration for AI Investment Research Assistant
+image:
+  file: .gitpod.Dockerfile
+
+# Commands to run on workspace startup
+tasks:
+  - name: Setup Environment
+    init: |
+      echo "🚀 Setting up AI Investment Research Assistant..."
+      pip install -r requirements.txt
+      pip install -e .
+      mkdir -p charts reports presentations
+      echo "✅ Environment setup complete!"
+    command: |
+      echo "🤖 AI Investment Research Assistant is ready!"
+      echo ""
+      echo "Quick start commands:"
+      echo "  python investment_advisor/cli.py"
+      echo "  python investment_advisor/cli.py --query 'analyze AAPL'"
+      echo ""
+      echo "Try some example queries:"
+      echo "  - analyze TSLA"
+      echo "  - compare AAPL vs MSFT"
+      echo "  - technical analysis for GOOGL"
+      echo "  - help"
+      echo ""
+
+# Ports to expose
+ports:
+  - name: Streamlit Web App
+    port: 8501
+    onOpen: notify
+    description: Web interface for the investment advisor
+  - name: Jupyter Notebook
+    port: 8888
+    onOpen: ignore
+    description: Jupyter notebook server
+
+# VS Code extensions to install
+vscode:
+  extensions:
+    - ms-python.python
+    - ms-python.flake8
+    - ms-toolsai.jupyter
+    - ms-vscode.vscode-json
+    - redhat.vscode-yaml
+    - GitHub.copilot
+
+# GitHub prebuilds
+github:
+  prebuilds:
+    master: true
+    branches: true
+    pullRequests: true
+    pullRequestsFromForks: false
+    addCheck: true
+    addComment: false
+    addBadge: true
+
+# Workspace settings
+workspaceLocation: "."
+
+# Environment variables
+env:
+  PYTHONPATH: "/workspace/ai-investment-advisor"
+  MPLBACKEND: "Agg"
