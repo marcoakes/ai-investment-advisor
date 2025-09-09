@@ -85,6 +85,16 @@ class TaskPlanner:
         """Parse user query to extract intent and entities."""
         query = user_query.lower().strip()
         
+        # Check for exact commands first (before symbol extraction)
+        commands = ['help', 'status', 'history', 'tools', 'clear', 'quit', 'exit', 'h']
+        if query in commands:
+            return {
+                'original_query': user_query,
+                'symbols': [],
+                'query_type': 'command',
+                'parameters': {'command': query}
+            }
+        
         # Extract symbols
         symbols = self._extract_symbols(query)
         
@@ -472,6 +482,41 @@ class TaskExecutor:
                                 if hasattr(value, 'index') and hasattr(value, 'columns'):  # DataFrame-like
                                     params['data'] = value
                                     break
+        
+        # Special handling for chart generation tools
+        if tool.name == "chart_generator":
+            chart_data = {}
+            symbol = params.get('symbol', 'Unknown')
+            chart_data['symbol'] = symbol
+            
+            # Get price data
+            if 'data' in params and hasattr(params['data'], 'index') and hasattr(params['data'], 'columns'):
+                chart_data['price_data'] = params['data']
+            else:
+                # Try to find price data from dependencies
+                if 'symbol' in params:
+                    data_task_id = f"data_{symbol}"
+                    if data_task_id in self.execution_results:
+                        stock_result = self.execution_results[data_task_id]
+                        if stock_result.success and stock_result.data:
+                            if 'yahoo_data' in stock_result.data and 'historical_data' in stock_result.data['yahoo_data']:
+                                chart_data['price_data'] = stock_result.data['yahoo_data']['historical_data']
+                            elif 'historical_data' in stock_result.data:
+                                chart_data['price_data'] = stock_result.data['historical_data']
+            
+            # Get technical analysis data if available
+            if 'technical_data' in params:
+                chart_data.update(params['technical_data'])
+            else:
+                # Try to find technical data from dependencies
+                tech_task_id = f"technical_{symbol}"
+                if tech_task_id in self.execution_results:
+                    tech_result = self.execution_results[tech_task_id]
+                    if tech_result.success and tech_result.data:
+                        chart_data.update(tech_result.data)
+            
+            # Replace the data parameter with properly formatted chart data
+            params['data'] = chart_data
         
         try:
             result = tool.execute(**params)

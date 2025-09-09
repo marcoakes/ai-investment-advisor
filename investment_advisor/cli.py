@@ -126,6 +126,11 @@ class InvestmentAdvisorCLI:
             # Parse the query
             query_info = self.task_planner.parse_query(user_input)
             
+            # Handle commands directly
+            if query_info['query_type'] == 'command':
+                command = query_info['parameters']['command']
+                return self.handle_command(command) or ""
+            
             print(f"\\n🧠 Understanding your query...")
             print(f"   Query type: {query_info['query_type']}")
             if query_info['symbols']:
