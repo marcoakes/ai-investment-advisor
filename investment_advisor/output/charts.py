@@ -32,242 +32,116 @@ class ChartGenerator(BaseTool):
             print(f"DEBUG: Chart generation requested - Type: {chart_type}")
             print(f"DEBUG: Data keys: {list(data.keys()) if isinstance(data, dict) else 'Not a dict'}")
             
-            # Use bulletproof chart generation for all types
-            chart_path = self._create_bulletproof_chart(data, chart_type, title, save_path)
+            # Validate input data structure
+            if not isinstance(data, dict):
+                raise ValueError(f"Expected dict for data, got {type(data)}")
             
-            if chart_path:
-                return ToolResult(
-                    success=True,
-                    data={'chart_path': chart_path},
-                    metadata={'chart_type': chart_type, 'title': title}
-                )
+            if 'price_data' not in data:
+                raise ValueError("Missing 'price_data' key in chart data")
+            
+            price_data = data['price_data']
+            print(f"DEBUG: Price data type: {type(price_data)}")
+            print(f"DEBUG: Price data shape: {getattr(price_data, 'shape', 'No shape')}")
+            
+            if hasattr(price_data, 'columns'):
+                print(f"DEBUG: Price data columns: {list(price_data.columns)}")
+                print(f"DEBUG: Price data dtypes: {dict(price_data.dtypes)}")
+            
+            if chart_type == "price_chart":
+                chart_path = self.create_price_chart(data, title, save_path, **kwargs)
+            elif chart_type == "technical_chart":
+                chart_path = self.create_technical_chart(data, title, save_path, **kwargs)
+            elif chart_type == "performance_chart":
+                chart_path = self.create_performance_chart(data, title, save_path, **kwargs)
+            elif chart_type == "comparison_chart":
+                chart_path = self.create_comparison_chart(data, title, save_path, **kwargs)
+            elif chart_type == "volume_chart":
+                chart_path = self.create_volume_chart(data, title, save_path, **kwargs)
             else:
-                raise ValueError("Chart generation returned None")
+                return ToolResult(
+                    success=False,
+                    error=f"Unsupported chart type: {chart_type}"
+                )
+            
+            return ToolResult(
+                success=True,
+                data={'chart_path': chart_path},
+                metadata={'chart_type': chart_type, 'title': title}
+            )
         
         except Exception as e:
             print(f"DEBUG: Chart generation error: {str(e)}")
             import traceback
             traceback.print_exc()
-            
-            # Create an error chart as last resort
-            try:
-                error_chart_path = self._create_error_chart(str(e))
-                return ToolResult(
-                    success=False,
-                    error=f"Chart generation failed: {str(e)}",
-                    data={'chart_path': error_chart_path}
-                )
-            except:
-                return ToolResult(
-                    success=False,
-                    error=f"Chart generation failed: {str(e)}"
-                )
-    
-    def _create_bulletproof_chart(self, data: Dict[str, Any], chart_type: str, title: str = None, save_path: str = None) -> str:
-        """Create a chart that absolutely will not fail due to data type issues."""
-        print(f"DEBUG: Creating bulletproof {chart_type} chart")
-        
-        try:
-            fig, ax = plt.subplots(figsize=(12, 8))
-            
-            # Extract price data with maximum safety
-            price_data = data.get('price_data')
-            if price_data is None:
-                raise ValueError("No price_data found")
-            
-            print(f"DEBUG: Price data type: {type(price_data)}")
-            
-            # Get Close prices - try multiple approaches
-            close_values = None
-            
-            # Method 1: DataFrame access
-            if hasattr(price_data, 'Close'):
-                try:
-                    close_values = price_data['Close'].values
-                    print("DEBUG: Extracted Close via DataFrame column")
-                except:
-                    pass
-            
-            # Method 2: Dictionary access
-            if close_values is None and isinstance(price_data, dict):
-                try:
-                    close_values = price_data['Close']
-                    print("DEBUG: Extracted Close via dict key")
-                except:
-                    pass
-            
-            # Method 3: Try to find any numeric column
-            if close_values is None:
-                if hasattr(price_data, 'columns'):
-                    for col in ['Close', 'close', 'CLOSE', 'price', 'Price']:
-                        if col in price_data.columns:
-                            try:
-                                close_values = price_data[col].values
-                                print(f"DEBUG: Found price data in column: {col}")
-                                break
-                            except:
-                                continue
-            
-            if close_values is None:
-                raise ValueError("Could not extract price data from any expected format")
-            
-            # Convert to safe numpy array
-            try:
-                # Force conversion to numpy array of floats
-                close_array = np.array(close_values, dtype=np.float64)
-                print(f"DEBUG: Converted to numpy array, shape: {close_array.shape}")
-            except:
-                # If that fails, try pandas numeric conversion first
-                close_series = pd.to_numeric(close_values, errors='coerce')
-                close_array = np.array(close_series, dtype=np.float64)
-                print("DEBUG: Had to use pandas conversion first")
-            
-            # Remove non-finite values
-            finite_mask = np.isfinite(close_array)
-            clean_prices = close_array[finite_mask]
-            
-            if len(clean_prices) == 0:
-                raise ValueError("No finite price data available after cleaning")
-            
-            # Create simple x-axis
-            x_values = np.arange(len(clean_prices))
-            
-            print(f"DEBUG: Final arrays - X: {len(x_values)} points, Y: {len(clean_prices)} points")
-            print(f"DEBUG: Data types - X: {x_values.dtype}, Y: {clean_prices.dtype}")
-            
-            # Plot with maximum safety
-            ax.plot(x_values, clean_prices, linewidth=2, color='blue', label='Price')
-            ax.set_title(title or 'Stock Price Chart')
-            ax.set_xlabel('Time Period')
-            ax.set_ylabel('Price ($)')
-            ax.legend()
-            ax.grid(True, alpha=0.3)
-            
-            # Save the chart
-            if save_path is None:
-                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-                save_path = os.path.join(self.output_dir, f"bulletproof_chart_{timestamp}.png")
-            
-            plt.tight_layout()
-            plt.savefig(save_path, dpi=300, bbox_inches='tight')
-            plt.close()
-            
-            print(f"DEBUG: Successfully saved chart to {save_path}")
-            return save_path
-            
-        except Exception as e:
-            print(f"DEBUG: Error in bulletproof chart: {e}")
-            return self._create_error_chart(str(e))
-    
-    def _create_error_chart(self, error_message: str) -> str:
-        """Create a chart showing the error message."""
-        try:
-            fig, ax = plt.subplots(figsize=(12, 8))
-            ax.text(0.5, 0.5, f'Chart Generation Error:\n{error_message}', 
-                   ha='center', va='center', transform=ax.transAxes, wrap=True)
-            ax.set_title("Chart Error - Please Check Data")
-            
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            save_path = os.path.join(self.output_dir, f"error_chart_{timestamp}.png")
-            
-            plt.tight_layout()
-            plt.savefig(save_path, dpi=300, bbox_inches='tight')
-            plt.close()
-            
-            return save_path
-        except:
-            return None
+            return ToolResult(
+                success=False,
+                error=f"Chart generation failed: {str(e)}"
+            )
     
     def create_price_chart(self, data: Dict[str, Any], title: str = None, 
                           save_path: str = None, **kwargs) -> str:
         """Create a basic price chart."""
         print("DEBUG: Starting price chart creation")
+        fig, ax = plt.subplots(figsize=(12, 8))
         
+        price_data = data['price_data']
+        
+        # Clean the data before plotting
+        clean_data = self._clean_data_for_plotting(price_data)
+        if clean_data is None or len(clean_data) == 0:
+            raise ValueError("No valid data available for plotting")
+        
+        print("DEBUG: About to plot price data")
         try:
-            fig, ax = plt.subplots(figsize=(12, 8))
+            # Force convert index and Close to proper types for matplotlib
+            x_data = self._safe_convert_for_plotting(clean_data.index, "index")
+            y_data = self._safe_convert_for_plotting(clean_data['Close'], "Close")
             
-            price_data = data['price_data']
-            print(f"DEBUG: Raw price_data type: {type(price_data)}")
+            print(f"DEBUG: X data type: {type(x_data)}, length: {len(x_data)}")
+            print(f"DEBUG: Y data type: {type(y_data)}, length: {len(y_data)}")
             
-            # Ultra-safe data extraction
-            try:
-                # Get Close prices as numpy array
-                if hasattr(price_data, 'Close'):
-                    close_values = price_data['Close'].values
-                elif isinstance(price_data, dict) and 'Close' in price_data:
-                    close_values = price_data['Close']
-                else:
-                    raise ValueError("Cannot find Close price data")
-                
-                print(f"DEBUG: Close values type: {type(close_values)}, shape: {getattr(close_values, 'shape', len(close_values))}")
-                
-                # Convert to pure numpy float array
-                close_array = np.array(close_values, dtype=np.float64)
-                
-                # Remove any non-finite values
-                finite_mask = np.isfinite(close_array)
-                clean_close = close_array[finite_mask]
-                
-                if len(clean_close) == 0:
-                    raise ValueError("No finite Close price data available")
-                
-                # Create simple range index for x-axis
-                x_values = np.arange(len(clean_close))
-                
-                print(f"DEBUG: Final data - X: {type(x_values)}, Y: {type(clean_close)}")
-                print(f"DEBUG: Data lengths - X: {len(x_values)}, Y: {len(clean_close)}")
-                
-                # Simple, safe plot
-                ax.plot(x_values, clean_close, label='Close Price', linewidth=2, color='blue')
-                ax.set_title(title or "Stock Price Chart")
-                ax.set_xlabel('Time Period')
-                ax.set_ylabel('Price ($)')
-                ax.legend()
-                ax.grid(True, alpha=0.3)
-                
-                print("DEBUG: Successfully created basic price chart")
-                
-            except Exception as plot_error:
-                print(f"DEBUG: Error in plotting: {plot_error}")
-                # Create a minimal fallback chart
-                ax.text(0.5, 0.5, f'Chart data error:\n{str(plot_error)}', 
-                       ha='center', va='center', transform=ax.transAxes)
-                ax.set_title(title or "Chart Generation Error")
-                
-            plt.tight_layout()
-            
-            if save_path is None:
-                save_path = os.path.join(self.output_dir, f"price_chart_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png")
-            
-            plt.savefig(save_path, dpi=300, bbox_inches='tight')
-            plt.close()
-            
-            return save_path
+            ax.plot(x_data, y_data, label='Close Price', linewidth=2)
+            print("DEBUG: Successfully plotted Close price")
             
         except Exception as e:
-            print(f"DEBUG: Critical error in create_price_chart: {e}")
-            # Create a minimal error chart
-            fig, ax = plt.subplots(figsize=(12, 8))
-            ax.text(0.5, 0.5, f'Chart Generation Failed:\n{str(e)}', 
-                   ha='center', va='center', transform=ax.transAxes)
-            ax.set_title("Chart Error")
-            
-            if save_path is None:
-                save_path = os.path.join(self.output_dir, f"error_chart_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png")
-            
-            plt.savefig(save_path, dpi=300, bbox_inches='tight')
-            plt.close()
-            
-            return save_path
+            print(f"DEBUG: Error plotting Close price: {e}")
+            raise
+        
+        if 'sma_20' in data:
+            sma_20_clean = self._clean_indicator_data(data, 'sma_20')
+            if sma_20_clean is not None:
+                ax.plot(clean_data.index, sma_20_clean, label='SMA 20', alpha=0.7)
+        if 'sma_50' in data:
+            sma_50_clean = self._clean_indicator_data(data, 'sma_50')
+            if sma_50_clean is not None:
+                ax.plot(clean_data.index, sma_50_clean, label='SMA 50', alpha=0.7)
+        
+        ax.set_title(title or f"Price Chart - {data.get('symbol', 'Stock')}")
+        ax.set_xlabel('Date')
+        ax.set_ylabel('Price ($)')
+        ax.legend()
+        ax.grid(True, alpha=0.3)
+        
+        # Format x-axis
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+        ax.xaxis.set_major_locator(mdates.MonthLocator(interval=1))
+        plt.xticks(rotation=45)
+        
+        plt.tight_layout()
+        
+        if save_path is None:
+            save_path = os.path.join(self.output_dir, f"price_chart_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png")
+        
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        plt.close()
+        
+        return save_path
     
     def create_technical_chart(self, data: Dict[str, Any], title: str = None, 
                              save_path: str = None, **kwargs) -> str:
         """Create a technical analysis chart with multiple indicators."""
-        print("DEBUG: Starting technical chart creation")
-        
-        try:
-            fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(12, 12), 
-                                               gridspec_kw={'height_ratios': [3, 1, 1]})
+        fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(12, 12), 
+                                           gridspec_kw={'height_ratios': [3, 1, 1]})
         
         price_data = data['price_data']
         
