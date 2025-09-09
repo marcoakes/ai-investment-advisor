@@ -1,82 +1,94 @@
-# 🤖 AI Investment Research Assistant
+# 📈 Professional Financial Analysis Platform
 
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/marcoakes/ai-investment-advisor?style=social)](https://github.com/marcoakes/ai-investment-advisor)
-[![CI/CD](https://github.com/marcoakes/ai-investment-advisor/workflows/CI/badge.svg)](https://github.com/marcoakes/ai-investment-advisor/actions)
-[![Docker](https://github.com/marcoakes/ai-investment-advisor/workflows/Docker%20Build%20and%20Push/badge.svg)](https://github.com/marcoakes/ai-investment-advisor/actions)
+[![CI/CD Pipeline](https://github.com/marcoakes/ai-investment-advisor/workflows/CI%2FCD%20Pipeline/badge.svg)](https://github.com/marcoakes/ai-investment-advisor/actions)
 
 [![Open in Gitpod](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/marcoakes/ai-investment-advisor)
-[![Open In Colab](https://img.shields.io/badge/Colab-Demo-orange?logo=google-colab)](https://colab.research.google.com/github/marcoakes/ai-investment-advisor/blob/main/AI_Investment_Assistant_Demo.ipynb)
+[![Open In Colab](https://img.shields.io/badge/Colab-Enhanced%20Demo-orange?logo=google-colab)](https://colab.research.google.com/github/marcoakes/ai-investment-advisor/blob/main/AI_Investment_Assistant_Demo_Enhanced.ipynb)
 [![Binder](https://img.shields.io/badge/Binder-Launch-purple?logo=jupyter)](https://mybinder.org/v2/gh/marcoakes/ai-investment-advisor/main)
-[![Replit](https://img.shields.io/badge/Replit-Run-blue?logo=replit)](https://replit.com/new/github/marcoakes/ai-investment-advisor)
 
 [![GitHub Issues](https://img.shields.io/github/issues/marcoakes/ai-investment-advisor)](https://github.com/marcoakes/ai-investment-advisor/issues)
 [![GitHub Pull Requests](https://img.shields.io/github/issues-pr/marcoakes/ai-investment-advisor)](https://github.com/marcoakes/ai-investment-advisor/pulls)
 [![GitHub Last Commit](https://img.shields.io/github/last-commit/marcoakes/ai-investment-advisor)](https://github.com/marcoakes/ai-investment-advisor/commits/main)
-[![Docker Pulls](https://img.shields.io/docker/pulls/marcoakes/ai-investment-advisor)](https://hub.docker.com/r/marcoakes/ai-investment-advisor)
 
-> **🚀 A sophisticated AI-powered investment research assistant with natural language CLI interface**
+> **🚀 A comprehensive quantitative finance platform for technical analysis, backtesting, and risk management**
 
-Transform your investment analysis with an intelligent assistant that combines multiple financial data sources, advanced technical analysis, strategy backtesting, and automated reporting - all through simple conversational commands.
+Professional-grade financial analysis tools combining advanced technical indicators, comprehensive backtesting engines, risk management systems, and automated report generation - built with institutional-quality standards.
 
 ---
 
-## 📸 **Screenshots & Demo**
+## 📊 **Platform Overview**
 
+### **🎯 Production CLI Interface**
 ```bash
-💬 Ask me anything about investments: analyze AAPL stock
+$ python investment_advisor/cli.py --query "compare AAPL vs MSFT"
+
+AI Investment Research Assistant initialized successfully!
+🚀 Financial Analysis Platform
+========================================
 
 🧠 Understanding your query...
-   Query type: stock_analysis
-   Symbols found: AAPL
+   Query type: comparative_analysis
+   Symbols found: AAPL, MSFT
 
-📋 Planned 4 task(s):
-   1. stock_aggregator (data_acquisition)
-   2. technical_analyzer (analysis)  
+📋 Planned 8 task(s):
+   1. stock_aggregator (data_fetch)
+   2. technical_analyzer (analysis)
    3. trading_signals (analysis)
    4. chart_generator (visualization)
+   [... processing both stocks ...]
 
 ⚙️ Executing analysis...
 ✅ Analysis completed successfully!
 
-📈 STOCK ANALYSIS SUMMARY
+📈 COMPARATIVE ANALYSIS SUMMARY
 
-🏢 AAPL:
-   Company: Apple Inc.
-   Sector: Technology
+🏢 AAPL: Apple Inc. (Technology)
    Current Price: $184.92
-   📊 Technical indicators calculated
-   📡 Trading signals generated
+   📊 RSI: 45.2 | MACD: Bullish | SMA: Uptrend
+   
+🏢 MSFT: Microsoft Corporation (Technology)  
+   Current Price: $378.85
+   📊 RSI: 52.8 | MACD: Neutral | SMA: Sideways
 
-📊 Charts created: 1 file(s)
-   • technical_chart_20241207_143022.png
+📊 Professional charts generated:
+   • comparative_analysis_20241209_143022.png
+   • technical_indicators_AAPL_20241209_143025.png
+   • technical_indicators_MSFT_20241209_143028.png
 ```
+
+### **📈 Enhanced Jupyter Notebook Interface**
+- **Professional backtesting engine** with walk-forward analysis
+- **Comprehensive risk metrics** (CAGR, Sharpe, Sortino, Max DD, VaR)
+- **Publication-ready visualizations** with signal overlays
+- **Multi-asset portfolio analysis** and comparison tools
 
 ---
 
 ## ✨ **Key Features**
 
-### 🎯 **Core Capabilities**
-- **🗣️ Natural Language Interface** - Ask questions in plain English
+### 🎯 **Production-Grade Capabilities**
+- **🔍 Advanced Technical Analysis** - 15+ professional indicators (RSI, MACD, Bollinger Bands, SMAs)
+- **📈 Comprehensive Backtesting** - Walk-forward analysis with institutional metrics
 - **📊 Multi-Source Data Integration** - Yahoo Finance, Alpha Vantage, Finnhub APIs  
-- **🔍 Advanced Technical Analysis** - RSI, MACD, Bollinger Bands, Moving Averages
-- **📈 Strategy Backtesting** - Test strategies with comprehensive performance metrics
-- **⚖️ Comparative Analysis** - Side-by-side stock comparisons
-- **📊 Professional Visualizations** - Publication-ready charts and graphs
-- **📄 Automated Reports** - PDF documents and PowerPoint presentations
-- **🧠 AI Task Planning** - Intelligent multi-step analysis execution
-- **💾 Session Memory** - Context retention across conversations
+- **⚖️ Risk Management Suite** - VaR, Maximum Drawdown, Sharpe/Sortino ratios
+- **🎨 Professional Visualizations** - Publication-ready charts with signal overlays
+- **🚀 Production CLI Interface** - Command-line tool for automated analysis
+- **📓 Enhanced Jupyter Environment** - Interactive analysis with educational compliance
+- **🐳 Docker Containerization** - Production deployment with Redis caching
+- **🔧 CI/CD Pipeline** - Automated testing and security scanning
 
 ### 🛠️ **Supported Analysis Types**
-| Analysis Type | Description | Example Query |
-|---------------|-------------|---------------|
-| **Stock Analysis** | Comprehensive fundamental & technical analysis | `"analyze TSLA"` |
-| **Technical Analysis** | In-depth technical indicators and signals | `"technical analysis for AAPL"` |
-| **Strategy Backtesting** | Historical strategy performance testing | `"backtest strategy for MSFT"` |
-| **Comparative Analysis** | Multi-stock performance comparison | `"compare AAPL vs GOOGL"` |
-| **Risk Assessment** | VaR, Sharpe ratio, drawdown analysis | `"risk analysis for my portfolio"` |
-| **Market Research** | News sentiment and fundamental data | `"research semiconductor stocks"` |
+| Analysis Type | Description | CLI Command |
+|---------------|-------------|-------------|
+| **Technical Analysis** | RSI, MACD, Bollinger Bands, SMAs with signals | `python investment_advisor/cli.py --query "analyze AAPL"` |
+| **Comparative Analysis** | Multi-stock performance comparison | `python investment_advisor/cli.py --query "compare AAPL vs MSFT"` |
+| **Strategy Backtesting** | Historical performance with metrics | Enhanced Jupyter Notebook |
+| **Risk Assessment** | VaR, Sharpe, Sortino, Maximum Drawdown | Enhanced Jupyter Notebook |
+| **Portfolio Analysis** | Multi-asset risk/return analysis | Enhanced Jupyter Notebook |
+| **Chart Generation** | Professional technical analysis charts | Automatic with all analyses |
 
 ---
 
@@ -84,14 +96,15 @@ Transform your investment analysis with an intelligent assistant that combines m
 
 ### **🌐 Try Online (No Installation Required)**
 
-| Platform | Description | Launch |
-|----------|-------------|--------|
-| **🔗 Gitpod** | Full development environment in browser | [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/marcoakes/ai-investment-advisor) |
-| **📓 Google Colab** | Interactive notebook with demos | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/marcoakes/ai-investment-advisor/blob/main/AI_Investment_Assistant_Demo.ipynb) |
-| **🚀 Binder** | Jupyter environment in browser | [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/marcoakes/ai-investment-advisor/main) |
-| **⚡ Replit** | Code and run instantly | [![Run on Repl.it](https://replit.com/badge/github/marcoakes/ai-investment-advisor)](https://replit.com/new/github/marcoakes/ai-investment-advisor) |
+| Platform | Interface | Launch |
+|----------|-----------|--------|
+| **🔗 Gitpod** | Production CLI + Jupyter | [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/marcoakes/ai-investment-advisor) |
+| **📓 Google Colab** | Enhanced notebook with professional features | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/marcoakes/ai-investment-advisor/blob/main/AI_Investment_Assistant_Demo_Enhanced.ipynb) |
+| **🚀 Binder** | Interactive Jupyter environment | [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/marcoakes/ai-investment-advisor/main) |
 
 ### **💻 Local Installation**
+
+#### **Option 1: Production CLI**
 ```bash
 # Clone the repository
 git clone https://github.com/marcoakes/ai-investment-advisor.git
@@ -100,72 +113,74 @@ cd ai-investment-advisor
 # Install dependencies
 pip install -r requirements.txt
 
-# Run the application
-python investment_advisor/cli.py
+# Copy environment template
+cp .env.example .env
+
+# Run production CLI
+python investment_advisor/cli.py --query "analyze AAPL"
 ```
 
-### **🐳 Docker Installation**
+#### **Option 2: Enhanced Jupyter Notebook**
 ```bash
-# Run with Docker
-docker run -it --rm ghcr.io/marcoakes/ai-investment-advisor:latest
+# After cloning and installing dependencies
+jupyter lab
 
-# Or build locally
-docker build -t ai-investment-advisor .
-docker run -it ai-investment-advisor
+# Open: AI_Investment_Assistant_Demo_Enhanced.ipynb
+# Run all cells for comprehensive analysis
 ```
 
-### **First Analysis**
+### **🐳 Docker Production Deployment**
 ```bash
-# Interactive mode
-python investment_advisor/cli.py
+# Quick start with Docker Compose
+git clone https://github.com/marcoakes/ai-investment-advisor.git
+cd ai-investment-advisor
+cp .env.example .env
+docker-compose up -d
 
-💬 Ask me anything about investments: analyze Apple stock
+# Access Jupyter at: http://localhost:8888
 ```
 
-### **Single Query Mode**
+### **Production Examples**
 ```bash
+# Technical analysis
+python investment_advisor/cli.py --query "analyze AAPL"
+
+# Stock comparison
 python investment_advisor/cli.py --query "compare TSLA vs F"
+
+# UK stocks (London Exchange)
+python investment_advisor/cli.py --query "compare BARC.L vs HSBA.L"
 ```
 
 ---
 
-## 💡 **Usage Examples**
+## 💡 **Platform Components**
 
-### **📊 Stock Analysis**
+### **🎯 Production CLI Interface**
 ```bash
-"Analyze AAPL stock"
-"Tell me about Tesla" 
-"Research Microsoft fundamentals"
+# Single stock technical analysis
+python investment_advisor/cli.py --query "analyze AAPL"
+
+# Comparative analysis of multiple stocks  
+python investment_advisor/cli.py --query "compare AAPL vs MSFT"
+
+# International stocks (specify exchange)
+python investment_advisor/cli.py --query "analyze BARC.L"  # London
 ```
 
-### **⚖️ Comparative Analysis** 
-```bash
-"Compare AAPL vs MSFT"
-"Tesla versus Ford analysis"
-"Which is better: GOOGL or META?"
-```
+### **📓 Enhanced Jupyter Notebook**
+**Advanced Features Available:**
+- **Professional Backtesting Engine** - Walk-forward analysis with comprehensive metrics
+- **Risk Management Suite** - VaR, Sharpe ratio, Sortino ratio, Maximum Drawdown  
+- **Multi-Asset Portfolio Analysis** - Risk/return comparison across different stocks
+- **Publication-Ready Visualizations** - Professional charts with signal overlays
+- **Educational Compliance** - Proper disclaimers and educational-only positioning
 
-### **📈 Technical Analysis**
-```bash
-"Show technical indicators for NVDA"
-"Generate trading signals for AMZN"
-"RSI and MACD analysis for SPY"
-```
-
-### **🔄 Strategy Backtesting**
-```bash
-"Backtest moving average strategy for AAPL"
-"Test RSI strategy on Bitcoin"
-"Historical performance of momentum strategy"
-```
-
-### **📊 Visualization & Reporting**
-```bash
-"Create charts for my analysis"
-"Generate a PDF report"  
-"Make a PowerPoint presentation"
-"Plot price history with indicators"
-```
+### **🐳 Production Docker Environment**
+- **Redis Caching** - Faster data retrieval for repeated analyses
+- **Health Monitoring** - Container health checks and automatic restarts
+- **Volume Persistence** - Data and chart storage across container restarts
+- **Multi-stage Builds** - Optimized production deployment
 
 ---
 
@@ -194,22 +209,37 @@ graph TD
     G[Session Memory] --> B
 ```
 
-### **🧩 Module Structure**
+### **🧩 Platform Architecture**
 ```
-investment_advisor/
-├── 🎯 cli.py                    # Main CLI interface
-├── 🧠 core/                     # Core framework  
+📈 Financial Analysis Platform
+├── 🎯 CLI Interface (investment_advisor/cli.py)
+│   └── Production-ready command-line tool
+├── 📓 Enhanced Jupyter Notebook  
+│   ├── AI_Investment_Assistant_Demo_Enhanced.ipynb
+│   ├── Professional backtesting engine
+│   ├── Risk management suite  
+│   └── Publication-ready visualizations
+├── 🧠 Core Framework (investment_advisor/core/)
 │   ├── base.py                  # Tool registry & base classes
 │   ├── session.py               # Memory & context management
-│   └── reasoning.py             # AI task planning & execution
-├── 📊 data/                     # Data acquisition
-│   └── stock_data.py            # Financial APIs integration
-├── 🔬 analysis/                 # Analysis engines
-│   ├── technical.py             # Technical indicators & signals
-│   └── backtesting.py           # Strategy testing & comparison
-└── 📈 output/                   # Report generation
-    ├── charts.py                # Visualization engine
-    └── reports.py               # PDF & PowerPoint generation
+│   └── reasoning.py             # Query processing & task planning
+├── 📊 Data Layer (investment_advisor/data/)
+│   └── stock_data.py            # Multi-source API integration
+├── 🔬 Analysis Engines (investment_advisor/analysis/)
+│   ├── technical.py             # 15+ technical indicators
+│   └── backtesting.py           # Strategy testing framework
+├── 📈 Output Generation (investment_advisor/output/)
+│   ├── charts.py                # Professional chart generation
+│   └── reports.py               # Automated reporting
+├── 🧪 Testing (tests/)
+│   └── Comprehensive test suite with 25+ test cases
+├── 🐳 Production Deployment
+│   ├── Dockerfile               # Multi-stage production container
+│   ├── docker-compose.yml       # Full orchestration with Redis
+│   └── .github/workflows/       # CI/CD pipeline
+└── 🔧 Configuration
+    ├── requirements.txt         # Pinned dependencies (50+)
+    └── .env.example            # API key configuration template
 ```
 
 ---
@@ -501,8 +531,17 @@ ls -la reports/
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
-### **Disclaimer**
-⚠️ **Important:** This software is for educational and research purposes only. Always conduct your own due diligence and consult with financial professionals before making investment decisions. Past performance does not guarantee future results.
+### **Educational Disclaimer**
+⚠️ **Important:** This platform is designed for **educational and research purposes only**. It provides technical analysis tools and backtesting capabilities but does **NOT** provide investment advice or trading recommendations. 
+
+**Key Points:**
+- All analysis outputs are for **educational demonstration** of quantitative finance techniques
+- **Past performance does not guarantee future results**
+- Always **conduct your own due diligence** and consult qualified financial professionals
+- This platform is a **technical analysis tool**, not an investment advisor
+- No AI-powered predictions or recommendations are provided
+
+Built with institutional-quality standards for **educational** use in quantitative finance and technical analysis.
 
 ---
 
