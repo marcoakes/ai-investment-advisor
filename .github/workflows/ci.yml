@@ -1,27 +1,99 @@
+# AI Investment Advisor - Continuous Integration Pipeline
+# Automated testing, linting, and validation for all commits and PRs
+
 name: CI/CD Pipeline
 
 on:
   push:
     branches: [ main, develop ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, develop ]
+  schedule:
+    # Run daily tests at 2 AM UTC to catch API changes
+    - cron: '0 2 * * *'
+
+# Permissions for GitHub token
+permissions:
+  contents: read
+  security-events: write
+  pull-requests: write
+  checks: write
 
 jobs:
+  # ===============================================
+  # Code Quality and Security Checks
+  # ===============================================
+  code-quality:
+    runs-on: ubuntu-latest
+    name: Code Quality & Security
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install black flake8 mypy bandit safety
+        pip install -r requirements.txt
+        
+    - name: Code formatting check (Black)
+      run: |
+        black --check --diff .
+        
+    - name: Linting (Flake8)
+      run: |
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        
+    - name: Security scan (Bandit)
+      run: |
+        bandit -r . -f json -o bandit-report.json || true
+        bandit -r . --skip B101,B601
+        
+    - name: Dependency vulnerability scan (Safety)
+      run: |
+        safety check --json --output safety-report.json || true
+        safety check
+        
+    - name: Upload security reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: security-reports
+        path: |
+          bandit-report.json
+          safety-report.json
+
+  # ===============================================
+  # Unit and Integration Tests
+  # ===============================================
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ['3.8', '3.9', '3.10', '3.11']
-
+    name: Tests (Python ${{ matrix.python-version }})
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-
+      
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
-
+        
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libta-lib0-dev
+        
     - name: Cache pip dependencies
       uses: actions/cache@v3
       with:
@@ -29,101 +101,106 @@ jobs:
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
         restore-keys: |
           ${{ runner.os }}-pip-
-
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y python3-tk fonts-liberation
-
+          
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
+        pip install pytest pytest-cov pytest-xdist pytest-mock
         pip install -r requirements.txt
-        pip install pytest pytest-cov flake8 black
-
-    - name: Lint with flake8
-      run: |
-        # Stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # Exit-zero treats all errors as warnings
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=88 --statistics
-
-    - name: Check code formatting with Black
-      run: |
-        black --check --diff investment_advisor/
-
-    - name: Test import functionality
-      run: |
-        python -c "
-        import sys
-        import os
-        sys.path.append(os.getcwd())
-        try:
-            from investment_advisor.cli import InvestmentAdvisorCLI
-            from investment_advisor.core.base import ToolRegistry
-            from investment_advisor.data.stock_data import YahooFinanceAPI
-            print('✅ All imports successful')
-        except Exception as e:
-            print(f'❌ Import failed: {e}')
-            sys.exit(1)
-        "
-
-    - name: Test CLI help command
-      run: |
-        python investment_advisor/cli.py --query "help" || echo "CLI test completed"
-
-    - name: Run basic functionality tests
-      run: |
-        python -c "
-        import sys
-        import os
-        sys.path.append(os.getcwd())
-        from investment_advisor.core.base import ToolRegistry
-        from investment_advisor.data.stock_data import YahooFinanceAPI
         
-        # Test tool registry
-        registry = ToolRegistry()
-        yahoo_tool = YahooFinanceAPI()
-        registry.register_tool(yahoo_tool)
+    - name: Run unit tests
+      run: |
+        pytest tests/ -v --cov=./ --cov-report=xml --cov-report=html --maxfail=5
         
-        # Test tool parameters
-        params = yahoo_tool.get_parameters()
-        assert 'symbol' in params
-        
-        print('✅ Basic functionality tests passed')
-        "
-
-  docker:
-    runs-on: ubuntu-latest
-    needs: test
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Build Docker image
-      run: |
-        docker build -t ai-investment-advisor:test .
-
-    - name: Test Docker container
-      run: |
-        docker run --rm ai-investment-advisor:test python -c "print('Docker test successful')"
-
-  security:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Run security scan with Bandit
-      run: |
-        pip install bandit
-        bandit -r investment_advisor/ -f json -o bandit-report.json || true
-
-    - name: Upload security scan results
+    - name: Upload test results
       uses: actions/upload-artifact@v3
       if: always()
       with:
-        name: security-scan-results
-        path: bandit-report.json
+        name: test-results-${{ matrix.python-version }}
+        path: |
+          htmlcov/
+          coverage.xml
+
+  # ===============================================
+  # Notebook Validation
+  # ===============================================
+  notebook-test:
+    runs-on: ubuntu-latest
+    name: Notebook Validation
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install nbformat nbconvert jupyter
+        pip install -r requirements.txt
+        
+    - name: Validate notebook structure
+      run: |
+        python -c "
+        import nbformat
+        import sys
+        
+        notebooks = ['AI_Investment_Assistant_Demo_Enhanced.ipynb']
+        
+        for nb_path in notebooks:
+            try:
+                with open(nb_path, 'r') as f:
+                    nb = nbformat.read(f, as_version=4)
+                print(f'✅ {nb_path} is valid')
+            except Exception as e:
+                print(f'❌ {nb_path} is invalid: {e}')
+                sys.exit(1)
+        "
+
+  # ===============================================
+  # Docker Build and Test
+  # ===============================================
+  docker-test:
+    runs-on: ubuntu-latest
+    name: Docker Build & Test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Build Docker image
+      run: |
+        docker build -t ai-investment-advisor:test .
+        
+    - name: Test Docker image
+      run: |
+        # Test that the image starts successfully
+        docker run --rm -d --name test-container ai-investment-advisor:test sleep 30
+        
+        # Wait for container to be ready
+        sleep 5
+        
+        # Test that Python can import required modules
+        docker exec test-container python -c "
+        import yfinance
+        import pandas
+        import numpy
+        import matplotlib
+        print('✅ All imports successful')
+        "
+        
+        # Cleanup
+        docker stop test-container || true
+        
+    - name: Test Docker Compose
+      run: |
+        # Test docker-compose configuration
+        docker-compose config
+        echo "✅ Docker Compose configuration is valid"

@@ -1,18 +1,134 @@
+# AI Investment Advisor - Docker Compose Configuration
+# Production-ready orchestration with data persistence and monitoring
+
 version: '3.8'
 
 services:
-  investment-advisor:
-    build: .
+  # ===============================================
+  # Main Application Service
+  # ===============================================
+  ai-investment-advisor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
     container_name: ai-investment-advisor
-    stdin_open: true
-    tty: true
-    environment:
-      # Optional: Set API keys via environment
-      - ALPHA_VANTAGE_API_KEY=${ALPHA_VANTAGE_API_KEY}
-      - FINNHUB_API_KEY=${FINNHUB_API_KEY}
-    volumes:
-      # Mount output directories to host
-      - ./charts:/app/charts
-      - ./reports:/app/reports  
-      - ./presentations:/app/presentations
     restart: unless-stopped
+    
+    # Port mapping
+    ports:
+      - "8888:8888"  # Jupyter notebook
+    
+    # Environment variables
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+      - JUPYTER_ENABLE_LAB=yes
+    
+    # Environment file (create .env from .env.example)
+    env_file:
+      - .env
+    
+    # Volume mounts for data persistence
+    volumes:
+      - ./data:/app/data
+      - ./outputs:/app/outputs
+      - ./logs:/app/logs
+      - ./notebooks:/app/notebooks
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "python", "-c", "import yfinance; print('OK')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # Resource limits for production
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+    
+    # Network
+    networks:
+      - ai-investment-network
+
+  # ===============================================
+  # Optional: Redis for Caching (Production)
+  # ===============================================
+  redis-cache:
+    image: redis:7-alpine
+    container_name: ai-investment-cache
+    restart: unless-stopped
+    
+    # Redis port
+    ports:
+      - "6379:6379"
+    
+    # Redis configuration
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    
+    # Data persistence
+    volumes:
+      - redis-data:/data
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    
+    networks:
+      - ai-investment-network
+
+# ===============================================
+# Networks Configuration
+# ===============================================
+networks:
+  ai-investment-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# ===============================================
+# Volumes for Data Persistence
+# ===============================================
+volumes:
+  redis-data:
+    driver: local
+
+# ===============================================
+# Usage Instructions
+# ===============================================
+#
+# Development (Jupyter only):
+#   docker-compose up ai-investment-advisor
+#
+# Production (all services):
+#   docker-compose up -d
+#
+# View logs:
+#   docker-compose logs -f ai-investment-advisor
+#
+# Stop all services:
+#   docker-compose down
+#
+# Clean up with volumes:
+#   docker-compose down -v
+#
+# Update and rebuild:
+#   docker-compose build --no-cache
+#   docker-compose up -d
+#
+# Access points:
+#   - Jupyter: http://localhost:8888
+#   - Redis: localhost:6379
+#
+# ===============================================
