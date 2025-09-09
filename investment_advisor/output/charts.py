@@ -29,6 +29,24 @@ class ChartGenerator(BaseTool):
                 title: str = None, save_path: str = None, **kwargs) -> ToolResult:
         """Generate charts based on type and data."""
         try:
+            print(f"DEBUG: Chart generation requested - Type: {chart_type}")
+            print(f"DEBUG: Data keys: {list(data.keys()) if isinstance(data, dict) else 'Not a dict'}")
+            
+            # Validate input data structure
+            if not isinstance(data, dict):
+                raise ValueError(f"Expected dict for data, got {type(data)}")
+            
+            if 'price_data' not in data:
+                raise ValueError("Missing 'price_data' key in chart data")
+            
+            price_data = data['price_data']
+            print(f"DEBUG: Price data type: {type(price_data)}")
+            print(f"DEBUG: Price data shape: {getattr(price_data, 'shape', 'No shape')}")
+            
+            if hasattr(price_data, 'columns'):
+                print(f"DEBUG: Price data columns: {list(price_data.columns)}")
+                print(f"DEBUG: Price data dtypes: {dict(price_data.dtypes)}")
+            
             if chart_type == "price_chart":
                 chart_path = self.create_price_chart(data, title, save_path, **kwargs)
             elif chart_type == "technical_chart":
@@ -52,6 +70,9 @@ class ChartGenerator(BaseTool):
             )
         
         except Exception as e:
+            print(f"DEBUG: Chart generation error: {str(e)}")
+            import traceback
+            traceback.print_exc()
             return ToolResult(
                 success=False,
                 error=f"Chart generation failed: {str(e)}"
@@ -60,6 +81,7 @@ class ChartGenerator(BaseTool):
     def create_price_chart(self, data: Dict[str, Any], title: str = None, 
                           save_path: str = None, **kwargs) -> str:
         """Create a basic price chart."""
+        print("DEBUG: Starting price chart creation")
         fig, ax = plt.subplots(figsize=(12, 8))
         
         price_data = data['price_data']
@@ -68,8 +90,22 @@ class ChartGenerator(BaseTool):
         clean_data = self._clean_data_for_plotting(price_data)
         if clean_data is None or len(clean_data) == 0:
             raise ValueError("No valid data available for plotting")
+        
+        print("DEBUG: About to plot price data")
+        try:
+            # Force convert index and Close to proper types for matplotlib
+            x_data = self._safe_convert_for_plotting(clean_data.index, "index")
+            y_data = self._safe_convert_for_plotting(clean_data['Close'], "Close")
             
-        ax.plot(clean_data.index, clean_data['Close'], label='Close Price', linewidth=2)
+            print(f"DEBUG: X data type: {type(x_data)}, length: {len(x_data)}")
+            print(f"DEBUG: Y data type: {type(y_data)}, length: {len(y_data)}")
+            
+            ax.plot(x_data, y_data, label='Close Price', linewidth=2)
+            print("DEBUG: Successfully plotted Close price")
+            
+        except Exception as e:
+            print(f"DEBUG: Error plotting Close price: {e}")
+            raise
         
         if 'sma_20' in data:
             sma_20_clean = self._clean_indicator_data(data, 'sma_20')
@@ -278,6 +314,83 @@ class ChartGenerator(BaseTool):
         plt.close()
         
         return save_path
+    
+    def _safe_convert_for_plotting(self, data, data_name="data"):
+        """Convert data to types safe for matplotlib plotting."""
+        print(f"DEBUG: Converting {data_name} for plotting")
+        
+        if data is None:
+            raise ValueError(f"{data_name} is None")
+        
+        try:
+            # Convert to numpy array first
+            import numpy as np
+            
+            # Handle pandas Series/Index
+            if hasattr(data, 'values'):
+                array_data = data.values
+            else:
+                array_data = np.array(data)
+            
+            print(f"DEBUG: {data_name} array shape: {array_data.shape}")
+            print(f"DEBUG: {data_name} array dtype: {array_data.dtype}")
+            
+            # Check for object dtype (mixed types)
+            if array_data.dtype == 'object':
+                print(f"DEBUG: {data_name} has object dtype, converting...")
+                
+                # Try to convert to float
+                try:
+                    array_data = pd.to_numeric(array_data, errors='coerce')
+                    array_data = np.array(array_data, dtype=np.float64)
+                except:
+                    # If numeric conversion fails, try datetime for x-axis
+                    if data_name == "index":
+                        try:
+                            array_data = pd.to_datetime(array_data)
+                            return array_data
+                        except:
+                            pass
+                    # Last resort: use range index
+                    print(f"DEBUG: Using range index for {data_name}")
+                    array_data = np.arange(len(data))
+            
+            # Handle string/datetime index
+            elif data_name == "index" and not np.issubdtype(array_data.dtype, np.number):
+                try:
+                    array_data = pd.to_datetime(array_data)
+                    return array_data
+                except:
+                    print(f"DEBUG: Using range index for {data_name}")
+                    array_data = np.arange(len(data))
+            
+            # Ensure numeric data is float
+            if np.issubdtype(array_data.dtype, np.number):
+                array_data = np.array(array_data, dtype=np.float64)
+                
+                # Replace any remaining inf/nan for plotting
+                mask = np.isfinite(array_data)
+                if not mask.all():
+                    print(f"DEBUG: {data_name} has {(~mask).sum()} non-finite values")
+                    if data_name != "index":
+                        # For y-data, we can interpolate or drop
+                        array_data = array_data[mask] if mask.any() else np.array([0])
+                    else:
+                        # For x-data (index), use range
+                        array_data = np.arange(len(array_data))
+            
+            print(f"DEBUG: {data_name} final dtype: {array_data.dtype}")
+            print(f"DEBUG: {data_name} final shape: {array_data.shape}")
+            
+            return array_data
+            
+        except Exception as e:
+            print(f"DEBUG: Error converting {data_name}: {e}")
+            # Fallback: create dummy data
+            if data_name == "index":
+                return np.arange(len(data) if hasattr(data, '__len__') else 10)
+            else:
+                return np.zeros(len(data) if hasattr(data, '__len__') else 10)
     
     def _clean_data_for_plotting(self, data):
         """Clean data to ensure it's safe for matplotlib plotting."""
