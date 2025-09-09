@@ -63,12 +63,22 @@ class ChartGenerator(BaseTool):
         fig, ax = plt.subplots(figsize=(12, 8))
         
         price_data = data['price_data']
-        ax.plot(price_data.index, price_data['Close'], label='Close Price', linewidth=2)
+        
+        # Clean the data before plotting
+        clean_data = self._clean_data_for_plotting(price_data)
+        if clean_data is None or len(clean_data) == 0:
+            raise ValueError("No valid data available for plotting")
+            
+        ax.plot(clean_data.index, clean_data['Close'], label='Close Price', linewidth=2)
         
         if 'sma_20' in data:
-            ax.plot(price_data.index, data['sma_20'], label='SMA 20', alpha=0.7)
+            sma_20_clean = self._clean_indicator_data(data, 'sma_20')
+            if sma_20_clean is not None:
+                ax.plot(clean_data.index, sma_20_clean, label='SMA 20', alpha=0.7)
         if 'sma_50' in data:
-            ax.plot(price_data.index, data['sma_50'], label='SMA 50', alpha=0.7)
+            sma_50_clean = self._clean_indicator_data(data, 'sma_50')
+            if sma_50_clean is not None:
+                ax.plot(clean_data.index, sma_50_clean, label='SMA 50', alpha=0.7)
         
         ax.set_title(title or f"Price Chart - {data.get('symbol', 'Stock')}")
         ax.set_xlabel('Date')
@@ -99,15 +109,21 @@ class ChartGenerator(BaseTool):
         
         price_data = data['price_data']
         
+        # Clean the data before plotting
+        clean_data = self._clean_data_for_plotting(price_data)
+        if clean_data is None or len(clean_data) == 0:
+            raise ValueError("No valid data available for plotting")
+        
         # Main price chart with Bollinger Bands
-        ax1.plot(price_data.index, price_data['Close'], label='Close Price', linewidth=2)
+        ax1.plot(clean_data.index, clean_data['Close'], label='Close Price', linewidth=2)
         
         if 'bollinger_bands' in data:
-            bb = data['bollinger_bands']
-            ax1.plot(price_data.index, bb['upper_band'], label='BB Upper', alpha=0.5, linestyle='--')
-            ax1.plot(price_data.index, bb['middle_band'], label='BB Middle', alpha=0.7)
-            ax1.plot(price_data.index, bb['lower_band'], label='BB Lower', alpha=0.5, linestyle='--')
-            ax1.fill_between(price_data.index, bb['upper_band'], bb['lower_band'], alpha=0.1)
+            bb_clean = self._clean_indicator_data(data, 'bollinger_bands')
+            if bb_clean and all(key in bb_clean for key in ['upper_band', 'middle_band', 'lower_band']):
+                ax1.plot(clean_data.index, bb_clean['upper_band'], label='BB Upper', alpha=0.5, linestyle='--')
+                ax1.plot(clean_data.index, bb_clean['middle_band'], label='BB Middle', alpha=0.7)
+                ax1.plot(clean_data.index, bb_clean['lower_band'], label='BB Lower', alpha=0.5, linestyle='--')
+                ax1.fill_between(clean_data.index, bb_clean['upper_band'], bb_clean['lower_band'], alpha=0.1)
         
         ax1.set_title(title or f"Technical Analysis - {data.get('symbol', 'Stock')}")
         ax1.set_ylabel('Price ($)')
@@ -116,7 +132,9 @@ class ChartGenerator(BaseTool):
         
         # RSI chart
         if 'rsi' in data:
-            ax2.plot(price_data.index, data['rsi'], label='RSI', color='orange')
+            rsi_clean = self._clean_indicator_data(data, 'rsi')
+            if rsi_clean is not None:
+                ax2.plot(clean_data.index, rsi_clean, label='RSI', color='orange')
             ax2.axhline(y=70, color='r', linestyle='--', alpha=0.5)
             ax2.axhline(y=30, color='g', linestyle='--', alpha=0.5)
             ax2.set_ylabel('RSI')
@@ -126,10 +144,11 @@ class ChartGenerator(BaseTool):
         
         # MACD chart
         if 'macd' in data:
-            macd = data['macd']
-            ax3.plot(price_data.index, macd['macd_line'], label='MACD', color='blue')
-            ax3.plot(price_data.index, macd['signal_line'], label='Signal', color='red')
-            ax3.bar(price_data.index, macd['histogram'], label='Histogram', alpha=0.3)
+            macd_clean = self._clean_indicator_data(data, 'macd')
+            if macd_clean and all(key in macd_clean for key in ['macd_line', 'signal_line', 'histogram']):
+                ax3.plot(clean_data.index, macd_clean['macd_line'], label='MACD', color='blue')
+                ax3.plot(clean_data.index, macd_clean['signal_line'], label='Signal', color='red')
+                ax3.bar(clean_data.index, macd_clean['histogram'], label='Histogram', alpha=0.3)
             ax3.set_ylabel('MACD')
             ax3.set_xlabel('Date')
             ax3.legend()
@@ -226,8 +245,13 @@ class ChartGenerator(BaseTool):
         
         price_data = data['price_data']
         
+        # Clean the data before plotting
+        clean_data = self._clean_data_for_plotting(price_data)
+        if clean_data is None or len(clean_data) == 0:
+            raise ValueError("No valid data available for plotting")
+        
         # Price chart
-        ax1.plot(price_data.index, price_data['Close'], label='Close Price', linewidth=2)
+        ax1.plot(clean_data.index, clean_data['Close'], label='Close Price', linewidth=2)
         if 'volume_sma' in data:
             ax1_vol = ax1.twinx()
             ax1_vol.plot(price_data.index, data['volume_sma'], 
@@ -240,7 +264,7 @@ class ChartGenerator(BaseTool):
         ax1.grid(True, alpha=0.3)
         
         # Volume chart
-        ax2.bar(price_data.index, price_data['Volume'], alpha=0.7)
+        ax2.bar(clean_data.index, clean_data['Volume'], alpha=0.7)
         ax2.set_ylabel('Volume')
         ax2.set_xlabel('Date')
         ax2.grid(True, alpha=0.3)
@@ -254,6 +278,64 @@ class ChartGenerator(BaseTool):
         plt.close()
         
         return save_path
+    
+    def _clean_data_for_plotting(self, data):
+        """Clean data to ensure it's safe for matplotlib plotting."""
+        if data is None:
+            return None
+            
+        # Make a copy to avoid modifying original data
+        clean_data = data.copy()
+        
+        # Ensure index is datetime-like for time series plots
+        if hasattr(clean_data, 'index'):
+            try:
+                clean_data.index = pd.to_datetime(clean_data.index)
+            except (ValueError, TypeError):
+                pass
+        
+        # Clean numeric columns - replace inf and convert to numeric
+        numeric_columns = ['Open', 'High', 'Low', 'Close', 'Volume', 'Adj Close']
+        for col in numeric_columns:
+            if col in clean_data.columns:
+                # Convert to numeric, coercing errors to NaN
+                clean_data[col] = pd.to_numeric(clean_data[col], errors='coerce')
+                # Replace infinite values with NaN
+                clean_data[col] = clean_data[col].replace([np.inf, -np.inf], np.nan)
+        
+        # Drop rows with all NaN values in essential columns
+        essential_cols = [col for col in ['Close', 'Open', 'High', 'Low'] if col in clean_data.columns]
+        if essential_cols:
+            clean_data = clean_data.dropna(subset=essential_cols, how='all')
+        
+        return clean_data
+    
+    def _clean_indicator_data(self, data, indicator_name):
+        """Clean technical indicator data for plotting."""
+        if indicator_name not in data or data[indicator_name] is None:
+            return None
+            
+        indicator_data = data[indicator_name]
+        
+        # Handle Series data
+        if hasattr(indicator_data, 'replace'):
+            cleaned = pd.to_numeric(indicator_data, errors='coerce')
+            cleaned = cleaned.replace([np.inf, -np.inf], np.nan)
+            return cleaned
+        
+        # Handle dictionary data (like MACD, Bollinger Bands)
+        elif isinstance(indicator_data, dict):
+            cleaned_dict = {}
+            for key, values in indicator_data.items():
+                if hasattr(values, 'replace'):
+                    cleaned_values = pd.to_numeric(values, errors='coerce')
+                    cleaned_values = cleaned_values.replace([np.inf, -np.inf], np.nan)
+                    cleaned_dict[key] = cleaned_values
+                else:
+                    cleaned_dict[key] = values
+            return cleaned_dict
+        
+        return indicator_data
     
     def get_parameters(self) -> Dict[str, Any]:
         return {
