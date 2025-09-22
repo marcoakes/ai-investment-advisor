@@ -7,7 +7,7 @@
 # ===============================================
 
 # Financial data providers
-yfinance==0.2.18              # Yahoo Finance data (primary fallback)
+yfinance==0.2.66              # Yahoo Finance data (primary fallback)
 alpha-vantage==2.3.1          # Alpha Vantage API client
 finnhub-python==2.4.18        # Finnhub API client
 
