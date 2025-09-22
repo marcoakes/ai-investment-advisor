@@ -39,7 +39,7 @@ pandas-ta==0.3.14b           # Pandas technical analysis
 # WEB & API HANDLING
 # ===============================================
 
-requests==2.31.0             # HTTP library
+requests==2.32.5             # HTTP library
 urllib3==2.0.4               # HTTP client
 python-dotenv==1.0.0         # Environment variables
 
