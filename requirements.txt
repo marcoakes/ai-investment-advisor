@@ -32,7 +32,7 @@ plotly==5.15.0                # Interactive charts
 # TECHNICAL ANALYSIS
 # ===============================================
 
-TA-Lib==0.4.26               # Technical analysis indicators
+TA-Lib==0.6.7               # Technical analysis indicators
 pandas-ta==0.3.14b           # Pandas technical analysis
 
 # ===============================================
