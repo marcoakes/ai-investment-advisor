@@ -80,7 +80,7 @@ joblib==1.3.2                # Parallel processing
 # SECURITY & COMPLIANCE
 # ===============================================
 
-cryptography==41.0.3         # Cryptographic recipes
+cryptography==46.0.1         # Cryptographic recipes
 python-dateutil==2.8.2       # Date/time utilities
 
 # ===============================================
