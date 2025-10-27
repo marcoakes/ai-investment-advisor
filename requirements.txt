@@ -41,7 +41,7 @@ pandas-ta==0.3.14b           # Pandas technical analysis
 
 requests==2.31.0             # HTTP library
 urllib3==2.0.4               # HTTP client
-python-dotenv==1.0.0         # Environment variables
+python-dotenv==1.2.1         # Environment variables
 
 # ===============================================
 # JUPYTER & NOTEBOOK ENVIRONMENT
